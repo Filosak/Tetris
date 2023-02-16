@@ -1,12 +1,17 @@
+# imports
 import random
 from blocks import base_blocks
 import pygame
 
+# all function that aren't drawing
 class game:
+
+    # stores the block shapes
     def __init__(self):
         self.curr_block = None
         self.next_curr_block = None
 
+    # create new block shape along with its color
     def create_new(self):
         curr_block = random.choice(base_blocks)
         active = []
@@ -27,34 +32,41 @@ class game:
         return active
         
 
+    # checks if block can move down
     def move_down(self, board, active):
         for y, x in active:
             if [y+1, x] in active:
                 continue
-            elif y == 19 or board[y+1][x] == 1:
+            elif y == 19 or board[y+1][x][0] == 1:
                 return False
     
         return True
 
     
+    # checks if block can move left
     def move_left(self, board, active):
         for y, x in active:
             if [y, x-1] in active:
                 continue
-            elif x == 0 or board[y][x-1] == 1:
+            elif x == 0 or board[y][x-1][0] == 1:
                 return False
         return True
 
 
+    # checks if block can move right
     def move_right(self, board, active):
         for y, x in active:
+            
             if [y, x+1] in active:
                 continue
-            elif x == 9 or board[y][x+1] == 1:
+
+            elif x == 9 or board[y][x+1][0] == 1:
                 return False
+
         return True
 
 
+    # checks if block can rotate
     def rotate(self, board, curr_y, curr_x, active):
         base = [row[:] for row in self.curr_block]
         lm = len(base)
@@ -74,18 +86,20 @@ class game:
                         return False
                     elif [c_y, c_x] in active:
                         continue
-                    elif board[c_y][c_x] == 1:
+                    elif board[c_y][c_x][0] == 1:
                         return False
 
         self.curr_block = base
+
         return True
 
 
+    # clearss all rows that are filled with 1's
     def clear_row(self, board):
         cleared = 0
 
         for i in range(0, len(board)):
-            if 0 not in board[i]:
+            if 0 not in [x[0] for x in board[i]]:
                 cleared += 1
                 for j in range(i, 0, -1):
                     board[j] = board[j-1][:]
@@ -93,6 +107,7 @@ class game:
         return cleared
 
 
+    # updates stats after block placement
     def update_stats(self, score, level, rows, cleared):
         rows -= cleared
 

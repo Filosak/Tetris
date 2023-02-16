@@ -27,7 +27,7 @@ level = 0
 rows = 20
 
 block_size = (witdh-600) // 10
-board = [[0] * 10 for _ in range(20)]
+board = [[[0, "#FFFFFF"] for _ in range(10)] for _ in range(20)]
 colors = ["#00FFEF", "#0011FF", "#FF6F00", "#F7FF00", "#1AFF00", "#B300FF", "#FF0000"]
 
 curr_color = random.choice(colors)
@@ -126,7 +126,10 @@ screen.blit(text_surface, (100, 5, 210, 210))
 
 
 # functions
-def update_game():
+def update_game(active, board):
+    into_board(active)
+    draw_board(board)
+
     pygame.Surface.blit(screen, next_screen, (witdh-250, 50))
     pygame.Surface.blit(screen, score_screen, (witdh-265, 360))
     pygame.Surface.blit(screen, level_screen, (witdh-265, 505))
@@ -144,7 +147,7 @@ def create_new_block():
 
 def into_board(active):
     for y, x in active:
-        board[y][x] = 1
+        board[y][x] = [1, curr_color]
 
 
 def draw_board(board):
@@ -152,20 +155,23 @@ def draw_board(board):
     
     for y in range(0, len(board)):
         for x in range(0, len(board[0])):
-            if board[y][x] == 1:
-                pygame.draw.rect(game_screen, pygame.Color(curr_color), pygame.Rect(x*block_size, y*block_size, block_size, block_size))
+            if board[y][x][0] == 1:
+                c_color = board[y][x][1]
+
+                pygame.draw.rect(game_screen, pygame.Color(c_color), pygame.Rect(x*block_size, y*block_size, block_size, block_size))
 
 
 def delete(pos):
     for y, x in pos:
-        board[y][x] = 0
+        board[y][x] = [0, "#FFFFFF"]
 
 
 def check_end(active):
     for y, x in active:
-        if board[y][x] == 1:
+        if board[y][x][0] == 1:
             return True
     return False
+
 
 def draw_next(next_block, next_color):
     next_screen.fill((255,255,255))
@@ -195,17 +201,18 @@ def draw_stats(score, level, rows):
 
 
 # initial drawing
-into_board(active)
-draw_board(board)
 draw_next(game_functions.next_curr_block, next_color)
-update_game()
+draw_stats(score, level, rows)
+update_game(active, board)
 pygame.time.set_timer(move_down, 200)
 
 
 # game loop
 while run:
-    for event in pygame.event.get():
 
+    for event in pygame.event.get():
+        
+        # auto move + move down
         if event.type == move_down or (event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN):
             flag = game_functions.move_down(board, active)
 
@@ -227,19 +234,23 @@ while run:
                 if check_end(active) == True:
                     run = False
                 
-            into_board(active)
-            draw_board(board)
-            update_game()
+            update_game(active, board)
 
 
+        # if user exits it turns off
         if event.type == pygame.QUIT:
             run = False
 
+        
+        # pressed key listener
         if event.type == pygame.KEYDOWN:
+
+            # if ESC stops
             if event.key == pygame.K_ESCAPE:
                 run = False
 
 
+            # move left
             if event.key == pygame.K_LEFT:
                 flag = game_functions.move_left(board, active)
 
@@ -249,11 +260,10 @@ while run:
                     active = [[y, x-1] for y, x in active]
                     curr_top_x -= 1
 
-                    into_board(active)
-                    draw_board(board)
-                    update_game()
+                    update_game(active, board)
                     
 
+            # move right
             if event.key == pygame.K_RIGHT:
                 flag = game_functions.move_right(board, active)
 
@@ -263,10 +273,10 @@ while run:
                     active = [[y, x+1] for y, x in active]
                     curr_top_x += 1
 
-                    into_board(active)
-                    draw_board(board)
-                    update_game()
+                    update_game(active, board)
 
+
+            # rotation
             if event.key == pygame.K_UP:
                 flag = game_functions.rotate(board, curr_top_y, curr_top_x, active)
 
@@ -285,9 +295,6 @@ while run:
 
                                 active.append([c_y, c_x])
                     
-                    into_board(active)
-                    draw_board(board)
-                    update_game()
-
+                    update_game(active, board)
 
 pygame.quit()
