@@ -14,7 +14,7 @@ class game:
             for x in range(0, len(curr_block[0])):
                 if curr_block[y][x] == 1:
                     active.append([y, x+4])
-        
+
         self.curr_block = curr_block
         return active
         
@@ -46,5 +46,35 @@ class game:
                 return False
         return True
 
-    def rotate(self, board, active):
-        pass
+
+    def rotate(self, board, curr_y, curr_x, active):
+        base = [row[:] for row in self.curr_block]
+        lm = len(base)
+
+        for i in range(0, lm // 2):
+            for j in range(i, lm-i-1):
+                base[i][j], base[j][-1-i], base[-1-i][-1-j], base[-1-j][i] = base[-1-j][i], base[i][j], base[j][-1-i], base[-1-i][-1-j]
+
+
+        for y in range(0, lm):
+            for x in range(0, len(base[0])):
+                if base[y][x] == 1:
+                    c_y = y+curr_y
+                    c_x = x+curr_x
+
+                    if c_y < 0 or c_x < 0 or c_y > 19 or c_x > 9:
+                        return False
+                    elif [c_y, c_x] in active:
+                        continue
+                    elif board[c_y][c_x] == 1:
+                        return False
+
+        self.curr_block = base
+        return True
+
+
+    def clear_row(self, board):
+        for i in range(0, len(board)):
+            if 0 not in board[i]:
+                for j in range(i, 0, -1):
+                    board[j] = board[j-1][:]
