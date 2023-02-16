@@ -5,6 +5,7 @@ import pygame
 class game:
     def __init__(self):
         self.curr_block = None
+        self.next_curr_block = None
 
     def create_new(self):
         curr_block = random.choice(base_blocks)
@@ -14,8 +15,15 @@ class game:
             for x in range(0, len(curr_block[0])):
                 if curr_block[y][x] == 1:
                     active.append([y, x+4])
+        
+        if self.curr_block == None:
+            self.curr_block = curr_block
+        elif self.next_curr_block == None:
+            self.next_curr_block = curr_block
+        else:
+            self.curr_block = [row[:] for row in self.next_curr_block]
+            self.next_curr_block = curr_block
 
-        self.curr_block = curr_block
         return active
         
 
@@ -74,7 +82,24 @@ class game:
 
 
     def clear_row(self, board):
+        cleared = 0
+
         for i in range(0, len(board)):
             if 0 not in board[i]:
+                cleared += 1
                 for j in range(i, 0, -1):
                     board[j] = board[j-1][:]
+        
+        return cleared
+
+
+    def update_stats(self, score, level, rows, cleared):
+        rows -= cleared
+
+        if rows <= 0:
+            level += 1
+            rows = level * 10 + 20 - abs(rows)
+        
+        score += 100 * cleared
+
+        return score, level, rows
